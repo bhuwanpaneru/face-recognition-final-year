@@ -1,13 +1,18 @@
-def faceDetectedMat(imagePath):
+def faceDetectedMat(imagePath,HAAR_DETECTOR_PATH, PREDICTOR_PATH):
     import numpy as np
     import cv2
-    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    import dlib
+    predictor = dlib.shape_predictor(PREDICTOR_PATH)
+    face_cascade = cv2.CascadeClassifier(HAAR_DETECTOR_PATH)
     img = cv2.imread(imagePath, cv2.IMREAD_UNCHANGED)
     if len(img.shape)==3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     face = face_cascade.detectMultiScale(img, 1.3, 5)
-    roi_img = []
-    for (x,y,w,h) in face:
-        roi_img.append(img[y:y+h, x:x+w])
-    return roi_img
+    x,y,w,h = face[0]
+    rect = dlib.rectangle(int(x),int(y),int(x+w),int(y+h))
+    landmarks = np.matrix([[p.x, p.y] for p in predictor(img, rect).parts()])
+    for i in range(0,len(landmarks)):
+            cv2.putText(img, str(i), (landmarks[i,0], landmarks[i,1]),fontFace=cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,fontScale=0.4,color=(0, 0, 0))
+            cv2.circle(img, (landmarks[i,0], landmarks[i,1]), 5, color=(255,255,255))
+    return img,np.array(landmarks).tolist()
 
