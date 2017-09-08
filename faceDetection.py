@@ -28,12 +28,15 @@ def faceDetectedMat(imagePath,HAAR_DETECTOR_PATH, PREDICTOR_PATH):
     if len(img.shape)==3:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     face = face_cascade.detectMultiScale(img, 1.3, 5)
+    #print(face)
     if type(face)==np.ndarray:
         x = face[0][0]
         y = face[0][1]
         w = face[0][2]
         h = face[0][3]
         rect = img[y:y+h, x:x+w]
+        rect = cv2.resize(rect, (154,154))
+        #print(rect.shape)
         return rect
     else:
         return None
