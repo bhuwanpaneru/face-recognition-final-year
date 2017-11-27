@@ -35,7 +35,7 @@ def faceDetectedMat(imagePath,HAAR_DETECTOR_PATH, PREDICTOR_PATH):
         w = face[0][2]
         h = face[0][3]
         rect = img[y:y+h, x:x+w]
-        rect = cv2.resize(rect, (154,154))
+        rect = cv2.resize(rect, (250,250))
         #print(rect.shape)
         return rect
     else:
