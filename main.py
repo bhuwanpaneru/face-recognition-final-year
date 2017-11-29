@@ -13,7 +13,7 @@ from keras.layers import Dense, Dropout, Activation
 print("Executing "+str(sys.argv[0]))
 
 #TEST_IMAGE_PATH = str(sys.argv[2])
-DATASET_PATH = "D:\\face-recognition-final-year\\lfw_small_good"
+DATASET_PATH = "D:/face-recognition-final-year/Yale database"
 SHAPE_PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
 HAAR_CASCADE_PATH = "haarcascade_frontalface_default.xml"
 
@@ -42,6 +42,7 @@ def getTrainData(path):
         person_dir = os.path.join(main_dir,foldername)
         for file in os.listdir(person_dir):
             file_path = os.path.join(person_dir,file)
+            file_path = file_path.replace("\\","/")
             print("analyzing "+ file_path)
             x = faceDetection.faceDetectedMat(file_path, HAAR_CASCADE_PATH, SHAPE_PREDICTOR_PATH)
             if x!=None:
@@ -102,8 +103,8 @@ Y_test = cy_test
     
 xtrainLength = X_train.shape[0]
 xtestLength = X_test.shape[0]
-X_train = X_train.reshape(xtrainLength, 250*250)
-X_test = X_test.reshape(xtestLength, 250*250)
+X_train = X_train.reshape(xtrainLength, 150*150)
+X_test = X_test.reshape(xtestLength, 150*150)
 
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
@@ -125,10 +126,10 @@ model.add(Activation('softmax'))
 
 model = Sequential()
 model.add(Dense(512,input_shape=(X_train.shape[1],)))
-model.add(Activation('elu'))
+model.add(Activation('relu'))
 #model.add(Dropout(0.2))
-model.add(Dense(256))
-model.add(Activation('elu'))
+model.add(Dense(512))
+model.add(Activation('relu'))
 #model.add(Dropout(0.2))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
@@ -136,7 +137,7 @@ model.add(Activation('softmax'))
 print(model.summary())
 
 model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
-model.fit(X_train, Y_train, batch_size=64, nb_epoch=100, verbose=1, validation_data=(X_test, Y_test))
+model.fit(X_train, Y_train, batch_size=64, nb_epoch=50, verbose=1, validation_data=(X_test, Y_test))
 loss, accuracy = model.evaluate(X_test,Y_test, verbose=0)
 
 print("Loss : "+str(loss))
