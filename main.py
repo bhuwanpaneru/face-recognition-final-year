@@ -8,12 +8,13 @@ from sklearn.cross_validation import train_test_split
 import matplotlib.pyplot as plt
 from keras.utils import np_utils
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
+from keras.layers import Dense, Dropout, Activation, Conv2D,MaxPooling2D, Flatten
+import keras
 
 print("Executing "+str(sys.argv[0]))
 
 #TEST_IMAGE_PATH = str(sys.argv[2])
-DATASET_PATH = "D:/face-recognition-final-year/Yale database"
+DATASET_PATH = "D:/face-recognition-final-year/lfw_15"
 SHAPE_PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
 HAAR_CASCADE_PATH = "haarcascade_frontalface_default.xml"
 
@@ -103,8 +104,8 @@ Y_test = cy_test
     
 xtrainLength = X_train.shape[0]
 xtestLength = X_test.shape[0]
-X_train = X_train.reshape(xtrainLength, 150*150)
-X_test = X_test.reshape(xtestLength, 150*150)
+X_train = X_train.reshape(xtrainLength, 1,150,150)
+X_test = X_test.reshape(xtestLength, 1,150,150)
 
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
@@ -123,7 +124,7 @@ model.add(Dropout(0.2))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 '''
-
+'''
 model = Sequential()
 model.add(Dense(512,input_shape=(X_train.shape[1],)))
 model.add(Activation('relu'))
@@ -133,13 +134,45 @@ model.add(Activation('relu'))
 #model.add(Dropout(0.2))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
+'''
+
+
+
+model = Sequential()
+model.add(Conv2D(32, (3, 3), padding='same',input_shape=(1,150,150),data_format="channels_first"))
+model.add(Activation('relu'))
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+'''
+model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Activation('relu'))
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+'''
+
+model.add(Flatten())
+model.add(Dense(512))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(nb_classes))
+model.add(Activation('softmax'))
+
+
 
 print(model.summary())
 
-model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
-model.fit(X_train, Y_train, batch_size=64, nb_epoch=50, verbose=1, validation_data=(X_test, Y_test))
-loss, accuracy = model.evaluate(X_test,Y_test, verbose=0)
+#model.compile(loss='sparse_categorical_crossentropy', optimizer="adam", metrics=['accuracy'])
 
+
+model.compile(loss='sparse_categorical_crossentropy',
+              optimizer=keras.optimizers.SGD(lr=0.01, momentum=0.9, nesterov=True),metrics=['accuracy'])
+model.fit(X_train, Y_train, batch_size=64, epochs=50, verbose=1, validation_data=(X_test, Y_test))
+loss, accuracy = model.evaluate(X_test,Y_test, verbose=0)
 print("Loss : "+str(loss))
 
 print("Accuracy :"+str(accuracy))
