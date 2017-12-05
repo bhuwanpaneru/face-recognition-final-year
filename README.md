@@ -6,6 +6,10 @@ Programming Technology Used : Python 3.5 (Anaconda 3.0 64-bit Win)
 <ul>
   <li>cv2 (OpenCV 3.0)</li>
   <li>keras </li>
+  <li>Numpy</li>
+  <li>tensor flow</li>
+  <li>imutils</li>
+  <li>dlib</li>
 </ul>
 <p>The project is to develop an optimal technology for face recognition in academic and college purpose in real time</p>
 
