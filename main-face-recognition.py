@@ -14,9 +14,9 @@ import keras
 print("Executing "+str(sys.argv[0]))
 
 #TEST_IMAGE_PATH = str(sys.argv[2])
-DATASET_PATH = "D:/face-recognition-final-year/lfw_15"
-SHAPE_PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
-HAAR_CASCADE_PATH = "haarcascade_frontalface_default.xml"
+#DATASET_PATH = "D:/face-recognition-final-year/lfw_15"
+#SHAPE_PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
+#HAAR_CASCADE_PATH = "haarcascade_frontalface_default.xml"
 
 #snippet for file testing
 '''
@@ -25,9 +25,7 @@ cv2.namedWindow("Face Landmarks Detection", cv2.WINDOW_NORMAL)
 cv2.imshow("Face Landmarks Detection",detectedFace)
 '''
 
-
-recognizer = cv2.face.createLBPHFaceRecognizer()
-
+'''
 def getTrainData(path):
     image_files = []
     labels = []
@@ -52,44 +50,26 @@ def getTrainData(path):
                 labels.append(foldername)           
             
     return image_files, labels, labelInt_key, labelInt_val
-
-
-images, labels, labelKey, labelVal = getTrainData(DATASET_PATH)
-
-c = np.array(images)
-labelNum = []
-for i in labels:
-    labelNum.append(int(labelVal[labelKey.index(i)]))
-
-    
-print("Images length : "+str(len(images)))
-'''
-recognizer.train(images, np.array(labelNum))
-tImg = faceDetection.faceDetectedMat(TEST_IMAGE_PATH, HAAR_CASCADE_PATH, SHAPE_PREDICTOR_PATH)
-#print(tImg)
-name_predicted = recognizer.predict(tImg)
-print("The predicted Name : " + str(name_predicted) +" - "+ str(labelKey[int(name_predicted)]))
-print("Execution completed")
 '''
 
+#Since No more calling in the main module for image information retrieval, direct reading of Numpy array
+#images, labels, labelKey, labelVal = getTrainData(DATASET_PATH)    
+#print("Images length : "+str(len(images)))
 
+
+images = np.load("NUMPY_OBJECTS/JAFFE_INPUT.npy")
+labels = np.load("NUMPY_OBJECTS/JAFFE_OUTPUT_E.npy")
 X_train, X_test, y_train, y_test = train_test_split(np.array(images),np.array(labels), train_size=0.9, random_state = 20)
 
 X_train = np.array(X_train)
 X_test = np.array(X_test)
 
-'''
-nb_classes = 43
-y_train = np.array(y_train) 
-y_test = np.array(y_test)
+nb_classes = np.unique(labels).shape[0]
 
-Y_train = np_utils.to_categorical(y_train, nb_classes)
-Y_test = np_utils.to_categorical(y_test, nb_classes)
-'''
-
-nb_classes = len(labelKey)
-
-
+labelKey = np.unique(labels).tolist()
+labelVal = []
+for v in range(0,len(labelKey)):
+    labelVal.append(v)
 
 cy_train = []
 for i in y_train:
@@ -99,13 +79,18 @@ cy_test = []
 for i in y_test:
     cy_test.append(int(labelVal[labelKey.index(i)]))
     
-Y_train = cy_train
-Y_test = cy_test
-    
+Y_train = np.array(cy_train)
+Y_test = np.array(cy_test)
+
+
+
 xtrainLength = X_train.shape[0]
 xtestLength = X_test.shape[0]
-X_train = X_train.reshape(xtrainLength, 1,150,150)
-X_test = X_test.reshape(xtestLength, 1,150,150)
+
+#For ANN - (xtestLength,150*150)
+#For CNN - (xtestLength,1,150,150)
+X_train = X_train.reshape(xtrainLength,150*150)
+X_test = X_test.reshape(xtestLength,150*150)
 
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
@@ -113,7 +98,9 @@ X_test = X_test.astype('float32')
 X_train /= 255
 X_test /= 255
 
-'''
+
+
+#Artificial Neural Network Model
 model = Sequential()
 model.add(Dense(512,input_shape=(X_train.shape[1],)))
 model.add(Activation('relu'))
@@ -123,21 +110,11 @@ model.add(Activation('relu'))
 model.add(Dropout(0.2))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
-'''
-'''
-model = Sequential()
-model.add(Dense(512,input_shape=(X_train.shape[1],)))
-model.add(Activation('relu'))
-#model.add(Dropout(0.2))
-model.add(Dense(512))
-model.add(Activation('relu'))
-#model.add(Dropout(0.2))
-model.add(Dense(nb_classes))
-model.add(Activation('softmax'))
-'''
 
 
 
+#Convolution Model 
+'''
 model = Sequential()
 model.add(Conv2D(32, (3, 3), padding='same',input_shape=(1,150,150),data_format="channels_first"))
 model.add(Activation('relu'))
@@ -146,14 +123,12 @@ model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
-'''
 model.add(Conv2D(64, (3, 3), padding='same'))
 model.add(Activation('relu'))
 model.add(Conv2D(64, (3, 3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
-'''
 
 model.add(Flatten())
 model.add(Dense(512))
@@ -161,7 +136,7 @@ model.add(Activation('relu'))
 model.add(Dropout(0.5))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
-
+'''
 
 
 print(model.summary())
